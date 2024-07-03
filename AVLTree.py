@@ -156,9 +156,6 @@ class AVLTree(object):
         return 0
 
 
-
-
-
     """deletes node from the dictionary
 
     @type node: AVLNode
@@ -177,7 +174,20 @@ class AVLTree(object):
     """
 
     def avl_to_array(self):
-        return None
+        res = []
+        tmp_stack = []
+        current_node = self.root
+        while True: # very sad to use, but better then recursive
+            if current_node.is_real_node():
+                tmp_stack.append(current_node)
+                current_node = current_node.left
+            elif tmp_stack:
+                current_node = tmp_stack.pop()
+                res.append((current_node.key, current_node.value))
+                current_node = current_node.right
+            else:
+                break
+        return res
 
     """returns the number of items in dictionary 
 
@@ -186,9 +196,9 @@ class AVLTree(object):
     """
 
     def size(self):
-        if self.root == None:
+        if self.root is None:
             return 0
-        return self.root.size +1
+        return self.root.size + 1
 
     """compute the rank of node in the dictionary
 
