@@ -54,6 +54,39 @@ class AVLTree(object):
         self.root = None
         self.vn = AVLNode(None, None)
 
+    """
+    Connects any node to virtual node.
+    """
+    def _create_ghost_children(self, node: AVLNode):
+        node.left = self.vn
+        node.right = self.vn
+
+    def _create_child(self, node: AVLNode, key: int, value:str) -> None:
+        """
+        Student created function for cleaner code. Given a node, it creates for him a child
+        with all the necessery paramaters.
+        note: should have used match-case, but was not sure what version of python the grader
+        would run on. In addition, in my opinion, "right" and "left" should have been saved as
+        values in a config file to avoid errors.
+        @pre: Given node is a leaf
+        :param node: The node you wish that would bear a child
+        :param key: The created child's key
+        :param value: The created child's value
+        :return: None
+        """
+        if node.key < key:
+            node.right = AVLNode(key, value)
+            self._create_ghost_children(node.right)
+            node.right.height = node.height + 1
+            node.right.parent = node
+        elif node.key > key:
+            node.left = AVLNode(key, value)
+            self._create_ghost_children(node.left)
+            node.left.height = node.height + 1
+            node.left.parent = node
+        else:
+            raise Exception
+
     """searches for a node in the dictionary corresponding to the key
 
     @type key: int
@@ -95,17 +128,35 @@ class AVLTree(object):
     """
 
     def insert(self, key, val):
-        if self.size() == 0: # first insertion
+        if self.size() == 0:  # first insertion
             self.root = AVLNode(key, val)
-            self.root.height =0
+            self.root.height = 0
+            self._create_ghost_children(self.root)
             return 0
         current_node = self.root
         for i in range(self.size()):
-            if not current_node.is_real_node():
-
+            current_node.size = current_node.size+1
             if key < current_node.key:
+                if current_node.left.is_real_node():
+                    current_node = current_node.left
+                else:
+                    self._create_child(current_node, key, val)
+                    break
+            elif key > current_node.key:
+                if current_node.right.is_real_node():
+                    current_node = current_node.right
+                else:
+                    self._create_child(current_node, key, val)
+                    break
+        balances = self.balance_tree()
 
-        return -1
+        return balances
+
+    def balance_tree(self): # TODO!!!
+        return 0
+
+
+
 
 
     """deletes node from the dictionary
