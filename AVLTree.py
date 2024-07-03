@@ -65,6 +65,7 @@ class AVLTree(object):
 
     def search(self, key):
         if self.root == None:
+            print("Tree is empty")
             return None
         current_Node = self.root
         for i in range(self.root.size):
@@ -118,7 +119,9 @@ class AVLTree(object):
     """
 
     def size(self):
-        return -1
+        if self.root == None:
+            return 0
+        return self.root.size
 
     """compute the rank of node in the dictionary
 
