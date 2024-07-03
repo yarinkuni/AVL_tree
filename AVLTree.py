@@ -30,10 +30,13 @@ class AVLNode(object):
 
     @rtype: bool
     @returns: False if self is a virtual node, True otherwise.
+    Time complexity O(1) because obv
     """
 
     def is_real_node(self):
-        return False
+        if self.height == -1:
+            return False
+        return True
 
 
 """
@@ -48,7 +51,7 @@ class AVLTree(object):
     """
 
     def __init__(self):
-        self.root = None
+        self.root = AVLNode(None, None) # implempent an empty node as the root
 
     """searches for a node in the dictionary corresponding to the key
 
@@ -59,6 +62,15 @@ class AVLTree(object):
     """
 
     def search(self, key):
+        current_Node = self.root
+        for i in range(self.root.size):
+            if current_Node.key == key:
+                return current_Node
+            elif key < current_Node.key:
+                current_Node = current_Node.left
+            else:
+                current_Node = current_Node.right
+        print(f'Key {key} not in tree')
         return None
 
     """inserts a new node into the dictionary with corresponding key and value
