@@ -51,7 +51,7 @@ class AVLTree(object):
     """
 
     def __init__(self):
-        self.root = AVLNode(None, None) # implempent an empty node as the root
+        self.root = None
 
     """searches for a node in the dictionary corresponding to the key
 
@@ -59,9 +59,13 @@ class AVLTree(object):
     @param key: a key to be searched
     @rtype: AVLNode
     @returns: node corresponding to key
+    Time complexity O(logn). The code starts from the root and compars the node key to passed key.
+    In AVL Max depth is logn thus the TC is O(logn)
     """
 
     def search(self, key):
+        if self.root == None:
+            return None
         current_Node = self.root
         for i in range(self.root.size):
             if current_Node.key == key:
@@ -158,7 +162,8 @@ class AVLTree(object):
 
     @rtype: AVLNode
     @returns: the root, None if the dictionary is empty
+    TC: O(1)
     """
 
     def get_root(self):
-        return None
+        return self.root
