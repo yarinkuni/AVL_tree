@@ -52,6 +52,7 @@ class AVLTree(object):
 
     def __init__(self):
         self.root = None
+        self.vn = AVLNode(None, None)
 
     """searches for a node in the dictionary corresponding to the key
 
@@ -67,18 +68,22 @@ class AVLTree(object):
         if self.root == None:
             print("Tree is empty")
             return None
-        current_Node = self.root
-        for i in range(self.root.size):
-            if current_Node.key == key:
-                return current_Node
-            elif key < current_Node.key:
-                current_Node = current_Node.left
+        current_node = self.root
+        for i in range(self.size):  # To avoid bug causing an infinate loop
+            if not current_node.is_real_node():
+                print(f'Key {key} not in tree')
+                return None
+            if current_node.key == key:
+                return current_node
+            elif key < current_node.key:
+                current_node = current_node.left
             else:
-                current_Node = current_Node.right
+                current_node = current_node.right
         print(f'Key {key} not in tree')
         return None
 
     """inserts a new node into the dictionary with corresponding key and value
+    Keys in tree must be unique!
 
     @type key: int
     @pre: key currently does not appear in the dictionary
@@ -90,7 +95,18 @@ class AVLTree(object):
     """
 
     def insert(self, key, val):
+        if self.size() == 0: # first insertion
+            self.root = AVLNode(key, val)
+            self.root.height =0
+            return 0
+        current_node = self.root
+        for i in range(self.size()):
+            if not current_node.is_real_node():
+
+            if key < current_node.key:
+
         return -1
+
 
     """deletes node from the dictionary
 
@@ -121,7 +137,7 @@ class AVLTree(object):
     def size(self):
         if self.root == None:
             return 0
-        return self.root.size
+        return self.root.size +1
 
     """compute the rank of node in the dictionary
 
