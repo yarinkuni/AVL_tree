@@ -77,15 +77,19 @@ class AVLTree(object):
         if node.key < key:
             node.right = AVLNode(key, value)
             self._create_ghost_children(node.right)
-            node.right.height = node.height + 1
             node.right.parent = node
         elif node.key > key:
             node.left = AVLNode(key, value)
             self._create_ghost_children(node.left)
-            node.left.height = node.height + 1
             node.left.parent = node
         else:
             raise Exception
+
+
+    def _update_height(self, current_node):
+        while current_node != self.root:
+            current_node.height = 1 + max(current_node.right.height, current_node.left.height)
+            current_node = current_node.parent
 
     """searches for a node in the dictionary corresponding to the key
 
@@ -141,19 +145,25 @@ class AVLTree(object):
                     current_node = current_node.left
                 else:
                     self._create_child(current_node, key, val)
+                    if not current_node.right.is_real_node():
+                        self._update_height(current_node)
                     break
             elif key > current_node.key:
                 if current_node.right.is_real_node():
                     current_node = current_node.right
                 else:
                     self._create_child(current_node, key, val)
+                    if not current_node.left.is_real_node():
+                        self._update_height(current_node)
                     break
         balances = self.balance_tree()
 
         return balances
 
-    def balance_tree(self): # TODO!!!
-        return 0
+    def balance_tree(self, current_node : AVLNode): # TODO!!
+        while current_node.is_real_node():
+
+
 
 
     """deletes node from the dictionary
