@@ -137,6 +137,7 @@ class AVLTree(object):
             self.root.height = 0
             self._create_ghost_children(self.root)
             return 0
+        height_changed = False
         current_node = self.root
         for i in range(self.size()):
             current_node.size = current_node.size+1
@@ -147,6 +148,7 @@ class AVLTree(object):
                     self._create_child(current_node, key, val)
                     if not current_node.right.is_real_node():
                         self._update_height(current_node)
+                        height_changed= True
                     break
             elif key > current_node.key:
                 if current_node.right.is_real_node():
@@ -155,14 +157,35 @@ class AVLTree(object):
                     self._create_child(current_node, key, val)
                     if not current_node.left.is_real_node():
                         self._update_height(current_node)
+                        height_changed = True
                     break
         balances = self.balance_tree()
 
         return balances
 
-    def balance_tree(self, current_node : AVLNode): # TODO!!
-        while current_node.is_real_node():
+    def right_rotate(self, node):
+        o_left= node.left
+        o_left_o_right = o_left.right
+        o_left.right = node
+        node.left = o_left_o_right
+        o_left.parent = node.parent
+        o_left_o_right.parent = node
+        node.parent = o_left
 
+        node.height = 1 + max(node.left.height, node.right.height)
+        o_left.height = 1+ max(o_left.left.height, o_left.right.height)
+
+    def balance_tree(self, current_node : AVLNode, height_changed: bool): # TODO!!
+        balances = 0
+        while current_node is not None:
+            bf = current_node.left.height - current_node.right.height
+            if abs(bf) < 2 and not height_changed:
+                return balances
+            elif abs(bf) < 2 and height_changed:
+                current_node = current_node.parent
+            else:
+                balances = balances + do_rotation
+                current_node = current_node.parent
 
 
 
