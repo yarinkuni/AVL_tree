@@ -26,14 +26,12 @@ class AVLNode(object):
         self.height = -1
         self.size = 0
 
-    """returns whether self is not a virtual node 
-
-    @rtype: bool
-    @returns: False if self is a virtual node, True otherwise.
-    Time complexity O(1) because obv
-    """
-
-    def is_real_node(self):
+    def is_real_node(self) -> bool:
+        """returns whether self is not a virtual node
+        @rtype: bool
+        @returns: False if self is a virtual node, True otherwise.
+        Time complexity O(1) because obv
+        """
         if self.height == -1:
             return False
         return True
@@ -54,10 +52,11 @@ class AVLTree(object):
         self.root = None
         self.vn = AVLNode(None, None)
 
-    """
-    Connects any node to virtual node.
-    """
-    def _create_ghost_children(self, node: AVLNode):
+    def _create_ghost_children(self, node: AVLNode) -> None:
+        """
+        Connects any node to virtual node, for eazy acsess later. Connects everyone to the same node to save memory
+        TC: O(1)
+        """
         node.left = self.vn
         node.right = self.vn
 
@@ -73,6 +72,7 @@ class AVLTree(object):
         :param key: The created child's key
         :param value: The created child's value
         :return: None
+        TC: O(1)
         """
         if node.key < key:
             node.right = AVLNode(key, value)
@@ -87,24 +87,29 @@ class AVLTree(object):
         else:
             raise Exception
 
-    def _update_height(self, current_node):
+    def _update_height(self, current_node: AVLNode) -> None:
+        """
+        Updates the height of all the nodes in the path of a height change
+        @pre: a leaf was added so the height of the tree changed
+        @param current_node: the parent of the newely created leaf
+        TC: O(logn). each itteration, checks childrens heights 2* O(1), and does so along the tree until root, so
+            O(logn).
+        """
         while current_node != self.root:
             current_node.height = 1 + max(current_node.right.height, current_node.left.height)
             current_node = current_node.parent
         self.root.height = 1 + max(self.root.right.height, self.root.left.height)
 
-
-    """searches for a node in the dictionary corresponding to the key
-
-    @type key: int
-    @param key: a key to be searched
-    @rtype: AVLNode
-    @returns: node corresponding to key
-    Time complexity O(logn). The code starts from the root and compars the node key to passed key.
-    In AVL Max depth is logn thus the TC is O(logn)
-    """
-
     def search(self, key):
+        """
+        searches for a node in the dictionary corresponding to the key
+        @type key: int
+        @param key: a key to be searched
+        @rtype: AVLNode
+        @returns: node corresponding to key
+        Time complexity O(logn). The code starts from the root and compares the node key to passed key.
+        In AVL Max depth is logn thus the TC is O(logn)
+        """
         if self.root is None:
             print("Tree is empty")
             return None
@@ -122,19 +127,18 @@ class AVLTree(object):
         print(f'Key {key} not in tree')
         return None
 
-    """inserts a new node into the dictionary with corresponding key and value
-    Keys in tree must be unique!
+    def insert(self, key: int, val: str) -> int:
+        """inserts a new node into the dictionary with corresponding key and value
+        Keys in tree must be unique!
 
-    @type key: int
-    @pre: key currently does not appear in the dictionary
-    @param key: key of item that is to be inserted to self
-    @type val: string
-    @param val: the value of the item
-    @rtype: int
-    @returns: the number of rebalancing operation due to AVL rebalancing
-    """
-
-    def insert(self, key, val):
+        @type key: int
+        @pre: key currently does not appear in the dictionary
+        @param key: key of item that is to be inserted to self
+        @type val: string
+        @param val: the value of the item
+        @rtype: int
+        @returns: the number of rebalancing operation due to AVL rebalancing
+        """
         if self.size() == 0:  # first insertion
             self.root = AVLNode(key, val)
             self.root.height = 0
@@ -165,7 +169,7 @@ class AVLTree(object):
         balances = self.balance_tree(current_node, height_changed)
         return balances
 
-    def left_rotaion(self, node):
+    def left_rotaion(self, node: AVLNode) -> None:
         o_right = node.right
         o_right_o_left = o_right.left
         o_right.left = node
@@ -183,7 +187,7 @@ class AVLTree(object):
         else:
             o_right.parent.right = o_right
 
-    def right_rotate(self, node):
+    def right_rotate(self, node: AVLNode) -> None:
         o_left = node.left
         o_left_o_right = o_left.right
         o_left.right = node
@@ -202,7 +206,7 @@ class AVLTree(object):
         else:
             o_left.parent.right = o_left
 
-    def balance_tree(self, current_node : AVLNode, height_changed: bool):
+    def balance_tree(self, current_node : AVLNode, height_changed: bool) -> int:
         balances = 0
         while current_node is not None:
             bf = current_node.left.height - current_node.right.height
@@ -275,7 +279,7 @@ class AVLTree(object):
     @returns: the number of items in dictionary 
     """
 
-    def size(self):
+    def size(self) -> int:
         if self.root is None:
             return 0
         return self.root.size + 1
@@ -325,5 +329,5 @@ class AVLTree(object):
     TC: O(1)
     """
 
-    def get_root(self):
+    def get_root(self) -> AVLNode:
         return self.root
