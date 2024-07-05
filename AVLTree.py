@@ -107,6 +107,12 @@ class AVLTree(object):
             current_node.height = 1 + max(current_node.right.height, current_node.left.height)
             current_node = current_node.parent
 
+    @staticmethod
+    def _update_size(node: AVLNode) -> None:
+        while node is not None:
+            node.size = 1 + node.left.size + node.right.size
+            node = node.parent
+
     def _create_ghost_children(self, node: AVLNode) -> None:
         """
         Connects any node to virtual node, for easy access later. Connects everyone to the same node to save memory
@@ -330,6 +336,7 @@ class AVLTree(object):
                 current_node.right = tmp
                 tmp.parent = current_node
             self._update_height(current_node)
+            self._update_size(current_node)
         elif not node.right.is_real_node():
             tmp = node.left
             if node.key < current_node.key:
@@ -339,8 +346,9 @@ class AVLTree(object):
                 current_node.right = tmp
                 tmp.parent = current_node
             self._update_height(current_node)
+            self._update_size(current_node)
 
-        else: #node is in middle
+        else:  # node is in middle
             min_node = self._find_min(node.right)
             node.key = min_node.key
             node.value = min_node.value
