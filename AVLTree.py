@@ -216,7 +216,7 @@ class AVLTree(object):
                 current_node = current_node.parent
             else:
                 if bf == -2:
-                    if current_node.right.left.height - current_node.right.right.height < 0:
+                    if current_node.right.left.height - current_node.right.right.height <= 0:
                         self.left_rotaion(current_node)
                         balances = balances + 1
                         current_node = current_node.parent.parent
@@ -239,17 +239,54 @@ class AVLTree(object):
                         current_node = current_node.parent.parent
         return balances
 
-
-    """deletes node from the dictionary
-
-    @type node: AVLNode
-    @pre: node is a real pointer to a node in self
-    @rtype: int
-    @returns: the number of rebalancing operation due to AVL rebalancing
-    """
-
     def delete(self, node):
-        return -1
+        """deletes node from the dictionary
+
+        @type node: AVLNode
+        @pre: node is a real pointer to a node in self
+        @rtype: int
+        @returns: the number of rebalancing operation due to AVL rebalancing
+        """
+        current_node = node.parent
+        prev_height = current_node.height
+        if not node.left.is_real_node():
+            tmp = node.right
+            if node.key < current_node.key:
+                current_node.left = tmp
+                tmp.parent = current_node
+            else:
+                current_node.right = tmp
+                tmp.parent = current_node
+            self._update_height(current_node)
+        elif not node.right.is_real_node():
+            tmp = node.left
+            if node.key < current_node.key:
+                current_node.left = tmp
+                tmp.parent = current_node
+            else:
+                current_node.right = tmp
+                tmp.parent = current_node
+            self._update_height(current_node)
+
+        else: #node is in middle
+            min_node = self._find_min(node.right)
+            node.key = min_node.key
+            node.value = min_node.value
+            return self.delete(min_node)
+
+        height_changed = False
+        if prev_height != current_node.height:
+            height_changed = True
+
+        balances = self.balance_tree(current_node, height_changed)
+        return balances
+
+    def _find_min(self, node: AVLNode) -> AVLNode:
+        while node is not None:
+            if node.left.is_real_node():
+                node = node.left
+            else:
+                return node
 
     """returns an array representing dictionary 
 
