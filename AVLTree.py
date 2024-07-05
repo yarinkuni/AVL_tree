@@ -9,8 +9,8 @@
 
 
 class AVLNode(object):
-    """Constructor, you are allowed to add more fields.
-
+    """
+    Constructor, you are allowed to add more fields.
     @type key: int or None
     @param key: key of your node
     @type value: string
@@ -27,10 +27,11 @@ class AVLNode(object):
         self.size = 0
 
     def is_real_node(self) -> bool:
-        """returns whether self is not a virtual node
+        """
+        returns whether self is not a virtual node
         @rtype: bool
         @returns: False if self is a virtual node, True otherwise.
-        Time complexity O(1) because obv
+        TC: O(1)
         """
         if self.height == -1:
             return False
@@ -45,16 +46,51 @@ A class implementing an AVL tree.
 class AVLTree(object):
     """
     Constructor, you are allowed to add more fields.
-
     """
-
     def __init__(self):
         self.root = None
-        self.vn = AVLNode(None, None)
+        self.vn = AVLNode(None, None)  # Inits a virtual node to point to
+
+    @staticmethod  # I know we didn't learn but its a must
+    def lexographic_compare(word_a: str, word_b: str) -> str:
+        """
+        Does a basic lexographic comparison between two strings, and returns the higher. Numbers will be compared as
+        strings, with no regard for them being numbers!
+        @param word_a: str
+        @param word_b: str
+        @return: str with the higher lexographical order
+        """
+        if len(word_a) > len(word_b):
+            shorter = word_b
+            longer = word_a
+        else:
+            shorter = word_a
+            longer = word_b
+        for i in range(len(shorter)):
+            if shorter[i] > longer[i]:
+                return shorter
+            elif shorter[i] < longer[i]:
+                return longer
+        return longer  # The bigger word is higher on lexographic scale
+
+    @staticmethod
+    def _update_height(current_node: AVLNode) -> None:
+        """
+        Updates the height of all the nodes in the path of a height change
+        @pre: a leaf was added so the height of the tree changed
+        @param current_node: the parent of the newely created leaf
+        TC: O(logn). each itteration, checks childrens heights 2* O(1), and does so along the tree until root, so
+            O(logn).
+        """
+        while current_node is not None:
+            current_node.height = 1 + max(current_node.right.height, current_node.left.height)
+            current_node = current_node.parent
 
     def _create_ghost_children(self, node: AVLNode) -> None:
         """
-        Connects any node to virtual node, for eazy acsess later. Connects everyone to the same node to save memory
+        Connects any node to virtual node, for easy access later. Connects everyone to the same node to save memory
+        @pre: node is a real node in tree, node is a leaf
+        @param node: An AVLNode to connect to the vn
         TC: O(1)
         """
         node.left = self.vn
@@ -62,8 +98,7 @@ class AVLTree(object):
 
     def _create_child(self, node: AVLNode, key: int, value: str) -> None:
         """
-        Student created function for cleaner code. Given a node, it creates for him a child
-        with all the necessery paramaters.
+        Given a node, it creates for him a child with all the necessary parameters.
         note: should have used match-case, but was not sure what version of python the grader
         would run on. In addition, in my opinion, "right" and "left" should have been saved as
         values in a config file to avoid errors.
@@ -71,7 +106,6 @@ class AVLTree(object):
         :param node: The node you wish that would bear a child
         :param key: The created child's key
         :param value: The created child's value
-        :return: None
         TC: O(1)
         """
         if node.key < key:
@@ -89,24 +123,7 @@ class AVLTree(object):
         else:
             raise Exception
 
-    def _update_height_and_size(self, current_node: AVLNode) -> None:
-        """
-        Updates the height of all the nodes in the path of a height change
-        @pre: a leaf was added so the height of the tree changed
-        @param current_node: the parent of the newely created leaf
-        TC: O(logn). each itteration, checks childrens heights 2* O(1), and does so along the tree until root, so
-            O(logn).
-        """
-        while current_node is not None:
-            current_node.height = 1 + max(current_node.right.height, current_node.left.height)
-            if current_node.right.size == 0 and current_node.left.size == 0:
-                current_node.size = 1
-            else:
-                current_node.size = current_node.left.size + current_node.right.size + 1
-            current_node = current_node.parent
-
-
-    def search(self, key):
+    def search(self, key: int) -> AVLNode:
         """
         searches for a node in the dictionary corresponding to the key
         @type key: int
@@ -120,7 +137,7 @@ class AVLTree(object):
             print("Tree is empty")
             return None
         current_node = self.root
-        for i in range(self.size()):  # To avoid bug causing an infinate loop
+        for i in range(self.size()):  # To avoid a bug causing an infinate loop
             if not current_node.is_real_node():
                 print(f'Key {key} not in tree')
                 return None
@@ -134,16 +151,15 @@ class AVLTree(object):
         return None
 
     def insert(self, key: int, val: str) -> int:
-        """inserts a new node into the dictionary with corresponding key and value
-        Keys in tree must be unique!
-
+        """
+        inserts a new node into the dictionary with corresponding key and value
         @type key: int
         @pre: key currently does not appear in the dictionary
         @param key: key of item that is to be inserted to self
         @type val: string
         @param val: the value of the item
         @rtype: int
-        @returns: the number of rebalancing operation due to AVL rebalancing
+        @returns: the number of rebalanncing operations
         """
         if self.size() == 0:  # first insertion
             self.root = AVLNode(key, val)
@@ -154,29 +170,35 @@ class AVLTree(object):
         height_changed = False
         current_node = self.root
         for i in range(self.size()):
-            current_node.size = current_node.size+1
+            current_node.size = current_node.size + 1
             if key < current_node.key:
                 if current_node.left.is_real_node():
                     current_node = current_node.left
                 else:
                     self._create_child(current_node, key, val)
-                    if not current_node.right.is_real_node():
-                        self._update_height_and_size(current_node.left)
-                        height_changed= True
+                    if not current_node.right.is_real_node():  # if new leaf doesn't have a brother, the height changed
+                        self._update_height(current_node.left)
+                        height_changed = True
                     break
             elif key > current_node.key:
                 if current_node.right.is_real_node():
                     current_node = current_node.right
                 else:
                     self._create_child(current_node, key, val)
-                    if not current_node.left.is_real_node():
-                        self._update_height_and_size(current_node.right)
+                    if not current_node.left.is_real_node():  # if new leaf doesn't have a brother, the height changed
+                        self._update_height(current_node.right)
                         height_changed = True
                     break
         balances = self.balance_tree(current_node, height_changed)
         return balances
 
     def left_rotaion(self, node: AVLNode) -> None:
+        """
+        Performs a left rotation on node
+        @pre: left rotation is required and legal
+        @param node: The node with problematic BF.
+        TC: o(1)
+        """
         o_right = node.right
         o_right_o_left = o_right.left
         o_right.left = node
@@ -193,8 +215,16 @@ class AVLTree(object):
             o_right.parent.left = o_right
         else:
             o_right.parent.right = o_right
+        node.size = 1 + node.left.size + node.right.size
+        o_right.size = 1 + o_right.left.size + o_right.right.size
 
     def right_rotate(self, node: AVLNode) -> None:
+        """
+        Performs a right rotation on node
+        @pre: right rotation is required and legal
+        @param node: The node with problematic BF.
+        TC: o(1)
+        """
         o_left = node.left
         o_left_o_right = o_left.right
         o_left.right = node
@@ -212,9 +242,21 @@ class AVLTree(object):
             o_left.parent.left = o_left
         else:
             o_left.parent.right = o_left
+        node.size = 1 + node.left.size + node.right.size
+        o_left.size = 1 + o_left.right.size + o_left.left.size
 
-    def balance_tree(self, current_node : AVLNode, height_changed: bool) -> int:
+    def balance_tree(self, current_node: AVLNode, height_changed: bool) -> int:
+        """
+        Checks if any balances are required, and performs rotations. if roteted, updates tree params
+        @pre: a new leaf was created, without new leaf tree is balanced
+        @param current_node: The the parent of the newely inserted child
+        @param height_changed: bool, True if the height of current_node was changed due to insertion
+        @return: Number of rotations performed on tree
+        TC: O(logn) - checks to perform balances on every node on route from leaf to root (logn), and after every
+        rotation updates
+        """
         balances = 0
+        bottom_node = current_node
         while current_node is not None:
             bf = current_node.left.height - current_node.right.height
             if abs(bf) < 2 and not height_changed:
@@ -228,20 +270,20 @@ class AVLTree(object):
                         balances = balances + 1
                     else:
                         self.right_rotate(current_node.right)
-                        self._update_height_and_size(current_node.right.right)
+                        self._update_height(current_node.right.right)
                         self.left_rotaion(current_node)
                         balances = balances + 2
                 else:
                     if current_node.left.left.height - current_node.left.right.height < 0:
                         self.left_rotaion(current_node.left)
-                        self._update_height_and_size(current_node.left.left)
+                        self._update_height(current_node.left.left)
                         self.right_rotate(current_node)
                         balances = balances + 2
                     else:
                         self.right_rotate(current_node)
                         balances = balances + 1
-                self._update_height_and_size(current_node)
                 current_node = current_node.parent.parent
+        self._update_height(bottom_node)
         return balances
 
     def delete(self, node: AVLNode) -> int:
@@ -262,7 +304,7 @@ class AVLTree(object):
             else:
                 current_node.right = tmp
                 tmp.parent = current_node
-            self._update_height_and_size(current_node)
+            self._update_height(current_node)
         elif not node.right.is_real_node():
             tmp = node.left
             if node.key < current_node.key:
@@ -271,7 +313,7 @@ class AVLTree(object):
             else:
                 current_node.right = tmp
                 tmp.parent = current_node
-            self._update_height_and_size(current_node)
+            self._update_height(current_node)
 
         else: #node is in middle
             min_node = self._find_min(node.right)
@@ -404,21 +446,6 @@ class AVLTree(object):
             node = parent
             parent = parent.parent
         return parent
-
-    @staticmethod #I know we didn't learn but its a must
-    def lexographic_compare(word_a: str, word_b: str) -> str:
-        if len(word_a) > len(word_b):
-            shorter = word_b
-            longer = word_a
-        else:
-            shorter = word_a
-            longer = word_b
-        for i in range(len(shorter)):
-            if shorter[i] > longer[i]:
-                return shorter
-            elif shorter[i] < longer[i]:
-                return longer
-        return longer  # The bigger word is higher on lexographic scale
 
     """returns the root of the tree representing the dictionary
 
