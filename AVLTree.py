@@ -79,15 +79,17 @@ class AVLTree(object):
             node.right.height = 0
             self._create_ghost_children(node.right)
             node.right.parent = node
+            node.right.size = 1
         elif node.key > key:
             node.left = AVLNode(key, value)
             node.left.height = 0
             self._create_ghost_children(node.left)
             node.left.parent = node
+            node.left.size = 1
         else:
             raise Exception
 
-    def _update_height(self, current_node: AVLNode) -> None:
+    def _update_height_and_size(self, current_node: AVLNode) -> None:
         """
         Updates the height of all the nodes in the path of a height change
         @pre: a leaf was added so the height of the tree changed
@@ -95,10 +97,14 @@ class AVLTree(object):
         TC: O(logn). each itteration, checks childrens heights 2* O(1), and does so along the tree until root, so
             O(logn).
         """
-        while current_node != self.root:
+        while current_node is not None:
             current_node.height = 1 + max(current_node.right.height, current_node.left.height)
+            if current_node.right.size == 0 and current_node.left.size == 0:
+                current_node.size = 1
+            else:
+                current_node.size = current_node.left.size + current_node.right.size + 1
             current_node = current_node.parent
-        self.root.height = 1 + max(self.root.right.height, self.root.left.height)
+
 
     def search(self, key):
         """
@@ -143,6 +149,7 @@ class AVLTree(object):
             self.root = AVLNode(key, val)
             self.root.height = 0
             self._create_ghost_children(self.root)
+            self.root.size = 1
             return 0
         height_changed = False
         current_node = self.root
@@ -154,7 +161,7 @@ class AVLTree(object):
                 else:
                     self._create_child(current_node, key, val)
                     if not current_node.right.is_real_node():
-                        self._update_height(current_node)
+                        self._update_height_and_size(current_node.left)
                         height_changed= True
                     break
             elif key > current_node.key:
@@ -163,7 +170,7 @@ class AVLTree(object):
                 else:
                     self._create_child(current_node, key, val)
                     if not current_node.left.is_real_node():
-                        self._update_height(current_node)
+                        self._update_height_and_size(current_node.right)
                         height_changed = True
                     break
         balances = self.balance_tree(current_node, height_changed)
@@ -219,27 +226,25 @@ class AVLTree(object):
                     if current_node.right.left.height - current_node.right.right.height <= 0:
                         self.left_rotaion(current_node)
                         balances = balances + 1
-                        current_node = current_node.parent.parent
                     else:
-                        self.right_rotate(current_node)
-                        #current_node = current_node.parent
+                        self.right_rotate(current_node.right)
+                        self._update_height_and_size(current_node.right.right)
                         self.left_rotaion(current_node)
-                        current_node = current_node.parent.parent
                         balances = balances + 2
                 else:
                     if current_node.left.left.height - current_node.left.right.height < 0:
-                        self.left_rotaion(current_node)
-                        #current_node = current_node.parent
+                        self.left_rotaion(current_node.left)
+                        self._update_height_and_size(current_node.left.left)
                         self.right_rotate(current_node)
                         balances = balances + 2
-                        current_node = current_node.parent.parent
                     else:
                         self.right_rotate(current_node)
                         balances = balances + 1
-                        current_node = current_node.parent.parent
+                self._update_height_and_size(current_node)
+                current_node = current_node.parent.parent
         return balances
 
-    def delete(self, node):
+    def delete(self, node: AVLNode) -> int:
         """deletes node from the dictionary
 
         @type node: AVLNode
@@ -257,7 +262,7 @@ class AVLTree(object):
             else:
                 current_node.right = tmp
                 tmp.parent = current_node
-            self._update_height(current_node)
+            self._update_height_and_size(current_node)
         elif not node.right.is_real_node():
             tmp = node.left
             if node.key < current_node.key:
@@ -266,7 +271,7 @@ class AVLTree(object):
             else:
                 current_node.right = tmp
                 tmp.parent = current_node
-            self._update_height(current_node)
+            self._update_height_and_size(current_node)
 
         else: #node is in middle
             min_node = self._find_min(node.right)
@@ -288,13 +293,13 @@ class AVLTree(object):
             else:
                 return node
 
-    """returns an array representing dictionary 
-
-    @rtype: list
-    @returns: a sorted list according to key of touples (key, value) representing the data structure
-    """
-
     def avl_to_array(self):
+        """
+        returns an array representing dictionary
+        @rtype: list
+        @returns: a sorted list according to key of touples (key, value) representing the data structure
+        TC: O(nlogn)
+        """
         res = []
         tmp_stack = []
         current_node = self.root
@@ -304,22 +309,22 @@ class AVLTree(object):
                 current_node = current_node.left
             elif tmp_stack:
                 current_node = tmp_stack.pop()
-                res.append((current_node.key, current_node.value, current_node.height))
+                res.append((current_node.key, current_node.value, current_node.height, current_node.size))
                 current_node = current_node.right
             else:
                 break
         return res
 
-    """returns the number of items in dictionary 
-
-    @rtype: int
-    @returns: the number of items in dictionary 
-    """
-
     def size(self) -> int:
+        """
+        returns the number of items in dictionary
+        @rtype: int
+        @returns: the number of items in dictionary
+        TC: O(1)
+        """
         if self.root is None:
             return 0
-        return self.root.size + 1
+        return self.root.size
 
     """compute the rank of node in the dictionary
 
@@ -333,17 +338,32 @@ class AVLTree(object):
     def rank(self, node):
         return -1
 
-    """finds the i'th smallest item (according to keys) in the dictionary
+    def select(self, i: int) -> AVLNode:
+        """
+        finds the i'th smallest item (according to keys) in the dictionary
 
-    @type i: int
-    @pre: 1 <= i <= self.size()
-    @param i: the rank to be selected in self
-    @rtype: AVLNode
-    @returns: the node of rank i in self
-    """
+        @type i: int
+        @pre: 1 <= i <= self.size()
+        @param i: the rank to be selected in self
+        @rtype: AVLNode
+        @returns: the node of rank i in self
+        TC: O(logn) - does at most 1 trip at the tree's height
+        """
+        current_node = self.root
+        while True:
+            if not current_node.left.is_real_node():
+                if i == 1:
+                    return current_node
+                return current_node.right
 
-    def select(self, i):
-        return None
+            if i <= current_node.left.size:
+                current_node = current_node.left
+            elif i == current_node.left.size + 1:
+                return current_node
+            else:
+                i = i - (current_node.left.size + 1)
+                current_node = current_node.right
+
 
     """finds the node with the largest value in a specified range of keys
 
