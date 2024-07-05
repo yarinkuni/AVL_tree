@@ -175,10 +175,16 @@ class AVLTree(object):
         o_right_o_left.parent = node
 
         node.height = 1 + max(node.left.height, node.right.height)
-        o_right.height = 1+ max(o_right.left.height, o_right.left.height)
+        o_right.height = 1 + max(o_right.left.height, o_right.left.height)
+        if node == self.root:
+            self.root = node.parent
+        elif o_right.parent.left == node:
+            o_right.parent.left = o_right
+        else:
+            o_right.parent.right = o_right
 
     def right_rotate(self, node):
-        o_left= node.left
+        o_left = node.left
         o_left_o_right = o_left.right
         o_left.right = node
         node.left = o_left_o_right
@@ -188,7 +194,13 @@ class AVLTree(object):
         node.parent = o_left
 
         node.height = 1 + max(node.left.height, node.right.height)
-        o_left.height = 1+ max(o_left.left.height, o_left.right.height)
+        o_left.height = 1 + max(o_left.left.height, o_left.right.height)
+        if node == self.root:
+            self.root = node.parent
+        elif o_left.parent.left == node:
+            o_left.parent.left = o_left
+        else:
+            o_left.parent.right = o_left
 
     def balance_tree(self, current_node : AVLNode, height_changed: bool):
         balances = 0
@@ -211,7 +223,7 @@ class AVLTree(object):
                         current_node = current_node.parent.parent
                         balances = balances + 2
                 else:
-                    if current_node.right.left.height - current_node.right.right.height < 0:
+                    if current_node.left.left.height - current_node.left.right.height < 0:
                         self.left_rotaion(current_node)
                         #current_node = current_node.parent
                         self.right_rotate(current_node)
@@ -222,7 +234,6 @@ class AVLTree(object):
                         balances = balances + 1
                         current_node = current_node.parent.parent
         return balances
-
 
 
     """deletes node from the dictionary
@@ -252,7 +263,7 @@ class AVLTree(object):
                 current_node = current_node.left
             elif tmp_stack:
                 current_node = tmp_stack.pop()
-                res.append((current_node.key, current_node.value))
+                res.append((current_node.key, current_node.value, current_node.height))
                 current_node = current_node.right
             else:
                 break
