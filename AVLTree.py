@@ -159,8 +159,7 @@ class AVLTree(object):
                         self._update_height(current_node)
                         height_changed = True
                     break
-        balances = self.balance_tree()
-
+        balances = self.balance_tree(current_node, height_changed)
         return balances
 
     def left_rotaion(self, node):
@@ -188,7 +187,7 @@ class AVLTree(object):
         node.height = 1 + max(node.left.height, node.right.height)
         o_left.height = 1+ max(o_left.left.height, o_left.right.height)
 
-    def balance_tree(self, current_node : AVLNode, height_changed: bool): # TODO!!
+    def balance_tree(self, current_node : AVLNode, height_changed: bool):
         balances = 0
         while current_node is not None:
             bf = current_node.left.height - current_node.right.height
@@ -200,19 +199,26 @@ class AVLTree(object):
                 if bf == -2:
                     if current_node.right.left.height - current_node.right.right.height < 0:
                         self.left_rotaion(current_node)
-                        balances = balances +1
-                        current_node = current_node.parent
+                        balances = balances + 1
+                        current_node = current_node.parent.parent
                     else:
                         self.right_rotate(current_node)
-                        current_node = current_node.parent
+                        #current_node = current_node.parent
                         self.left_rotaion(current_node)
-                        current_node = current_node.parent
-                        balances = balances +2
+                        current_node = current_node.parent.parent
+                        balances = balances + 2
                 else:
-                    if current_node.right.left.height - current_node.right.right.height
-
-
-                current_node = current_node.parent
+                    if current_node.right.left.height - current_node.right.right.height < 0:
+                        self.left_rotaion(current_node)
+                        #current_node = current_node.parent
+                        self.right_rotate(current_node)
+                        balances = balances + 2
+                        current_node = current_node.parent.parent
+                    else:
+                        self.right_rotate(current_node)
+                        balances = balances + 1
+                        current_node = current_node.parent.parent
+        return balances
 
 
 
