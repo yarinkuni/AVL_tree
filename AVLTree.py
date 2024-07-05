@@ -303,6 +303,8 @@ class AVLTree(object):
                     else:
                         self.right_rotate(current_node)
                         balances = balances + 1
+                if current_node.parent is None:
+                    break
                 current_node = current_node.parent.parent
         self._update_height(bottom_node)
         return balances
@@ -359,18 +361,20 @@ class AVLTree(object):
         """
         if self.size() == 1:
             self.root = None
+            return 0
         if not self.root.left.is_real_node():
+            self.root.right.parent = None
             self.root = self.root.right
             return 0
         elif not self.root.right.is_real_node():
-            self.root = self.root.right()
+            self.root.left.parent = None
+            self.root = self.root.left
             return 0
         else:
             min_node = self._find_min(self.root.right)
             self.root.key = min_node.key
             self.root.value = min_node.value
             return self.delete(min_node)
-
 
     def _find_min(self, node: AVLNode) -> AVLNode:
         while node is not None:
@@ -386,10 +390,12 @@ class AVLTree(object):
         @returns: a sorted list according to key of touples (key, value) representing the data structure
         TC: O(nlogn)
         """
+        if self.size() == 0:
+            return []
         res = []
         tmp_stack = []
         current_node = self.root
-        while True: # very sad to use, but better then recursive
+        while True:  # very sad to use, but better then recursive
             if current_node.is_real_node():
                 tmp_stack.append(current_node)
                 current_node = current_node.left
