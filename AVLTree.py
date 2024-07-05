@@ -92,7 +92,7 @@ class AVLTree(object):
             current_node.height = 1 + max(current_node.right.height, current_node.left.height)
             current_node = current_node.parent
         self.root.height = 1 + max(self.root.right.height, self.root.left.height)
-        return None
+
 
     """searches for a node in the dictionary corresponding to the key
 
