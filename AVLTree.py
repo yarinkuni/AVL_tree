@@ -61,7 +61,7 @@ class AVLTree(object):
         node.left = self.vn
         node.right = self.vn
 
-    def _create_child(self, node: AVLNode, key: int, value:str) -> None:
+    def _create_child(self, node: AVLNode, key: int, value: str) -> None:
         """
         Student created function for cleaner code. Given a node, it creates for him a child
         with all the necessery paramaters.
@@ -76,20 +76,22 @@ class AVLTree(object):
         """
         if node.key < key:
             node.right = AVLNode(key, value)
+            node.right.height = 0
             self._create_ghost_children(node.right)
             node.right.parent = node
         elif node.key > key:
             node.left = AVLNode(key, value)
+            node.left.height = 0
             self._create_ghost_children(node.left)
             node.left.parent = node
         else:
             raise Exception
 
-
     def _update_height(self, current_node):
         while current_node != self.root:
             current_node.height = 1 + max(current_node.right.height, current_node.left.height)
             current_node = current_node.parent
+        self.root.height = 1 + max(self.root.right.height, self.root.left.height)
 
     """searches for a node in the dictionary corresponding to the key
 
@@ -102,11 +104,11 @@ class AVLTree(object):
     """
 
     def search(self, key):
-        if self.root == None:
+        if self.root is None:
             print("Tree is empty")
             return None
         current_node = self.root
-        for i in range(self.size):  # To avoid bug causing an infinate loop
+        for i in range(self.size()):  # To avoid bug causing an infinate loop
             if not current_node.is_real_node():
                 print(f'Key {key} not in tree')
                 return None
