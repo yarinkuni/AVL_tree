@@ -163,11 +163,24 @@ class AVLTree(object):
 
         return balances
 
+    def left_rotaion(self, node):
+        o_right = node.right
+        o_right_o_left = o_right.left
+        o_right.left = node
+        node.right = o_right_o_left
+        o_right.parent = node.parent
+        node.parent = o_right
+        o_right_o_left.parent = node
+
+        node.height = 1 + max(node.left.height, node.right.height)
+        o_right.height = 1+ max(o_right.left.height, o_right.left.height)
+
     def right_rotate(self, node):
         o_left= node.left
         o_left_o_right = o_left.right
         o_left.right = node
         node.left = o_left_o_right
+
         o_left.parent = node.parent
         o_left_o_right.parent = node
         node.parent = o_left
@@ -184,7 +197,21 @@ class AVLTree(object):
             elif abs(bf) < 2 and height_changed:
                 current_node = current_node.parent
             else:
-                balances = balances + do_rotation
+                if bf == -2:
+                    if current_node.right.left.height - current_node.right.right.height < 0:
+                        self.left_rotaion(current_node)
+                        balances = balances +1
+                        current_node = current_node.parent
+                    else:
+                        self.right_rotate(current_node)
+                        current_node = current_node.parent
+                        self.left_rotaion(current_node)
+                        current_node = current_node.parent
+                        balances = balances +2
+                else:
+                    if current_node.right.left.height - current_node.right.right.height
+
+
                 current_node = current_node.parent
 
 
