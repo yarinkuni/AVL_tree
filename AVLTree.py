@@ -326,17 +326,23 @@ class AVLTree(object):
             return 0
         return self.root.size
 
-    """compute the rank of node in the dictionary
+    def rank(self, node: AVLNode) -> int:
+        """
+        compute the rank of node in the dictionary
+        @type node: AVLNode
+        @pre: node is in self, tree is balanced, sizes are correct
+        @param node: a node in the dictionary to compute the rank for
+        @rtype: int
+        @returns: the rank of node in self
+        """
+        i = 1 + node.left.size
+        while node != self.root:
+            if node.parent.right == node:
+                i = i + 1
+                i = i + node.parent.left.size
+            node = node.parent
+        return i
 
-    @type node: AVLNode
-    @pre: node is in self
-    @param node: a node in the dictionary to compute the rank for
-    @rtype: int
-    @returns: the rank of node in self
-    """
-
-    def rank(self, node):
-        return -1
 
     def select(self, i: int) -> AVLNode:
         """
