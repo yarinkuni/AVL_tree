@@ -26,6 +26,27 @@ class AVLNode(object):
         self.height = -1
         self.size = 0
 
+    def get_size(self):
+        return self.size
+
+    def get_key(self):
+        return self.key
+
+    def get_value(self):
+        return self.value
+
+    def get_height(self):
+        return self.height
+
+    def get_left(self):
+        return self.left
+
+    def get_parent(self):
+        return self.parent
+
+    def get_right(self):
+        return self.right
+
     def is_real_node(self) -> bool:
         """
         returns whether self is not a virtual node
@@ -252,8 +273,8 @@ class AVLTree(object):
         @param current_node: The the parent of the newely inserted child
         @param height_changed: bool, True if the height of current_node was changed due to insertion
         @return: Number of rotations performed on tree
-        TC: O(logn) - checks to perform balances on every node on route from leaf to root (logn), and after every
-        rotation updates
+        TC: O(logn) - checks to perform balances on every node on route from leaf to root (logn), and in the end updates
+        the params, total logn + logn = 2logn = O(logn)
         """
         balances = 0
         bottom_node = current_node
@@ -264,7 +285,7 @@ class AVLTree(object):
             elif abs(bf) < 2 and height_changed:
                 current_node = current_node.parent
             else:
-                if bf == -2:
+                if bf == -2 and current_node.right.is_real_node():
                     if current_node.right.left.height - current_node.right.right.height <= 0:
                         self.left_rotaion(current_node)
                         balances = balances + 1
@@ -273,7 +294,7 @@ class AVLTree(object):
                         self._update_height(current_node.right.right)
                         self.left_rotaion(current_node)
                         balances = balances + 2
-                else:
+                elif current_node.left.is_real_node():
                     if current_node.left.left.height - current_node.left.right.height < 0:
                         self.left_rotaion(current_node.left)
                         self._update_height(current_node.left.left)
@@ -294,6 +315,8 @@ class AVLTree(object):
         @rtype: int
         @returns: the number of rebalancing operation due to AVL rebalancing
         """
+        if node == self.root:
+            return self._delete_root()
         current_node = node.parent
         prev_height = current_node.height
         if not node.left.is_real_node():
@@ -328,6 +351,27 @@ class AVLTree(object):
         balances = self.balance_tree(current_node, height_changed)
         return balances
 
+    def _delete_root(self) -> int:
+        """
+        special case of delete, where you attempt to delete the root (has no parent)
+        @return: Number of balancing actions
+        TC: O(logn) - same as delete
+        """
+        if self.size() == 1:
+            self.root = None
+        if not self.root.left.is_real_node():
+            self.root = self.root.right
+            return 0
+        elif not self.root.right.is_real_node():
+            self.root = self.root.right()
+            return 0
+        else:
+            min_node = self._find_min(self.root.right)
+            self.root.key = min_node.key
+            self.root.value = min_node.value
+            return self.delete(min_node)
+
+
     def _find_min(self, node: AVLNode) -> AVLNode:
         while node is not None:
             if node.left.is_real_node():
@@ -351,7 +395,7 @@ class AVLTree(object):
                 current_node = current_node.left
             elif tmp_stack:
                 current_node = tmp_stack.pop()
-                res.append((current_node.key, current_node.value, current_node.height, current_node.size))
+                res.append((current_node.key, current_node.value))
                 current_node = current_node.right
             else:
                 break
@@ -456,3 +500,4 @@ class AVLTree(object):
 
     def get_root(self) -> AVLNode:
         return self.root
+
