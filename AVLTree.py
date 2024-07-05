@@ -334,6 +334,7 @@ class AVLTree(object):
         @param node: a node in the dictionary to compute the rank for
         @rtype: int
         @returns: the rank of node in self
+        TC: O(logn) - does a trip from node up to root - max logn comparisons
         """
         i = 1 + node.left.size
         while node != self.root:
@@ -342,7 +343,6 @@ class AVLTree(object):
                 i = i + node.parent.left.size
             node = node.parent
         return i
-
 
     def select(self, i: int) -> AVLNode:
         """
@@ -382,8 +382,43 @@ class AVLTree(object):
     @returns: the node with maximal (lexicographically) value having a<=key<=b, or None if no such keys exist
     """
 
-    def max_range(self, a, b):
-        return None
+    def max_range(self, a: int, b: int) -> str:
+        current_node = self.root
+        while current_node.left.is_real_node() and current_node.left.key >= a:
+            current_node = current_node.left
+        max_word = current_node.value
+        while current_node.key <= b:
+            max_word = self.lexographic_compare(max_word, current_node.value)
+            current_node = self._get_succsesor(current_node)
+            if current_node is None:
+                return max_word
+        return max_word
+
+    def _get_succsesor(self, node: AVLNode) -> AVLNode:
+        if node.right.is_real_node():
+            return self._find_min(node.right)
+        parent = node.parent
+        while parent is not None:
+            if node != parent.right:
+                return parent
+            node = parent
+            parent = parent.parent
+        return parent
+
+    @staticmethod #I know we didn't learn but its a must
+    def lexographic_compare(word_a: str, word_b: str) -> str:
+        if len(word_a) > len(word_b):
+            shorter = word_b
+            longer = word_a
+        else:
+            shorter = word_a
+            longer = word_b
+        for i in range(len(shorter)):
+            if shorter[i] > longer[i]:
+                return shorter
+            elif shorter[i] < longer[i]:
+                return longer
+        return longer  # The bigger word is higher on lexographic scale
 
     """returns the root of the tree representing the dictionary
 
