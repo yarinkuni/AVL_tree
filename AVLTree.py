@@ -109,6 +109,13 @@ class AVLTree(object):
 
     @staticmethod
     def _update_size(node: AVLNode) -> None:
+        """
+        Updates the size of all the nodes in the path of a height change
+        @pre: a deletion occured
+        @param node: node who's size changed due to deletion
+        TC: O(logn). each itteration, checks childrens heights 2* O(1), and does so along the tree until root, so
+            O(logn).
+        """
         while node is not None:
             node.size = 1 + node.left.size + node.right.size
             node = node.parent
