@@ -1,8 +1,8 @@
-# username - complete info
-# id1      - complete info
-# name1    - complete info
-# id2      - complete info
-# name2    - complete info
+# username - yarink
+# id1      - 212171706
+# name1    - yarin klempfner
+# id2      - 218548956
+# name2    - noam faivishevsky
 
 
 """A class represnting a node in an AVL tree"""
@@ -171,7 +171,7 @@ class AVLTree(object):
             print("Tree is empty")
             return None
         current_node = self.root
-        for i in range(self.size()):  # To avoid a bug causing an infinate loop
+        for i in range(self.size()):  # To avoid a bug causing an infinite loop
             if not current_node.is_real_node():
                 print(f'Key {key} not in tree')
                 return None
@@ -193,7 +193,8 @@ class AVLTree(object):
         @type val: string
         @param val: the value of the item
         @rtype: int
-        @returns: the number of rebalanncing operations
+        @returns: the number of rebalancing operations
+        TC: O(logn) - O(logn): search + O(log(n)): update + O(logn): balance = 3log(n) = O(logn)
         """
         if self.size() == 0:  # first insertion
             self.root = AVLNode(key, val)
@@ -226,7 +227,7 @@ class AVLTree(object):
         balances = self.balance_tree(current_node, height_changed)
         return balances
 
-    def left_rotaion(self, node: AVLNode) -> None:
+    def left_rotate(self, node: AVLNode) -> None:
         """
         Performs a left rotation on node
         @pre: left rotation is required and legal
@@ -242,7 +243,7 @@ class AVLTree(object):
         o_right_o_left.parent = node
 
         node.height = 1 + max(node.left.height, node.right.height)
-        o_right.height = 1 + max(o_right.left.height, o_right.left.height)
+        o_right.height = 1 + max(o_right.left.height, o_right.right.height)
         if node == self.root:
             self.root = node.parent
         elif o_right.parent.left == node:
@@ -283,7 +284,7 @@ class AVLTree(object):
         """
         Checks if any balances are required, and performs rotations. if roteted, updates tree params
         @pre: a new leaf was created, without new leaf tree is balanced
-        @param current_node: The the parent of the newely inserted child
+        @param current_node: The parent of the newly inserted child
         @param height_changed: bool, True if the height of current_node was changed due to insertion
         @return: Number of rotations performed on tree
         TC: O(logn) - checks to perform balances on every node on route from leaf to root (logn), and in the end updates
@@ -300,16 +301,16 @@ class AVLTree(object):
             else:
                 if bf == -2 and current_node.right.is_real_node():
                     if current_node.right.left.height - current_node.right.right.height <= 0:
-                        self.left_rotaion(current_node)
+                        self.left_rotate(current_node)
                         balances = balances + 1
                     else:
                         self.right_rotate(current_node.right)
                         self._update_height(current_node.right.right)
-                        self.left_rotaion(current_node)
+                        self.left_rotate(current_node)
                         balances = balances + 2
                 elif current_node.left.is_real_node():
                     if current_node.left.left.height - current_node.left.right.height < 0:
-                        self.left_rotaion(current_node.left)
+                        self.left_rotate(current_node.left)
                         self._update_height(current_node.left.left)
                         self.right_rotate(current_node)
                         balances = balances + 2
@@ -391,7 +392,14 @@ class AVLTree(object):
             self.root.value = min_node.value
             return self.delete(min_node)
 
-    def _find_min(self, node: AVLNode) -> AVLNode:
+    @staticmethod
+    def _find_min(node: AVLNode) -> AVLNode:
+        """
+        finds the minimum key given a pointer to the sub-tree's root. basically goes left until it can't anymore
+        @param node: AVLNode root of the sub-tree
+        @return: pointer to the AVLNode with the lowest key
+        TC: O(logn)
+        """
         while node is not None:
             if node.left.is_real_node():
                 node = node.left
@@ -403,7 +411,7 @@ class AVLTree(object):
         returns an array representing dictionary
         @rtype: list
         @returns: a sorted list according to key of touples (key, value) representing the data structure
-        TC: O(nlogn)
+        TC: O(n) - prof during class
         """
         if self.size() == 0:
             return []
@@ -477,19 +485,18 @@ class AVLTree(object):
                 i = i - (current_node.left.size + 1)
                 current_node = current_node.right
 
-
-    """finds the node with the largest value in a specified range of keys
-
-    @type a: int
-    @param a: the lower end of the range
-    @type b: int
-    @param b: the upper end of the range
-    @pre: a<b
-    @rtype: AVLNode
-    @returns: the node with maximal (lexicographically) value having a<=key<=b, or None if no such keys exist
-    """
-
     def max_range(self, a: int, b: int) -> str:
+        """
+        finds the node with the largest value in a specified range of keys
+        @type a: int
+        @param a: the lower end of the range
+        @type b: int
+        @param b: the upper end of the range
+        @pre: a<b
+        @rtype: AVLNode
+        @returns: the node with maximal (lexicographically) value having a<=key<=b, or None if no such keys exist
+        TC: O(n+m) where m is the length of the largest string
+        """
         current_node = self.root
         while current_node.left.is_real_node() and current_node.left.key >= a:
             current_node = current_node.left
@@ -502,6 +509,12 @@ class AVLTree(object):
         return max_word
 
     def _get_succsesor(self, node: AVLNode) -> AVLNode:
+        """
+        given a node in an AVL tree, finds it's sucssesor
+        @param node:
+        @return: The node's sucssesor
+        TC: O(logn)
+        """
         if node.right.is_real_node():
             return self._find_min(node.right)
         parent = node.parent
@@ -512,13 +525,12 @@ class AVLTree(object):
             parent = parent.parent
         return parent
 
-    """returns the root of the tree representing the dictionary
-
-    @rtype: AVLNode
-    @returns: the root, None if the dictionary is empty
-    TC: O(1)
-    """
-
     def get_root(self) -> AVLNode:
+        """
+        returns the root of the tree representing the dictionary
+        @rtype: AVLNode
+        @returns: the root, None if the dictionary is empty
+        TC: O(1)
+        """
         return self.root
 
